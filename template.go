@@ -30,7 +30,7 @@ func (v {{ .ClassName }}) Label() string {
 }
 
 func (v {{ .ClassName }}) Values() []enum.Enum {
-	return []enum.Enum{{{ .Keys }}}
+	return []enum.Enum{ {{ .Keys }} }
 }
 
 func (v {{ .ClassName }}) Type() string {
