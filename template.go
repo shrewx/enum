@@ -14,7 +14,7 @@ func (v {{ .ClassName }}) Int() int {
 }
 
 func (v {{ .ClassName }}) String() string {
-	switch v  { {{range .Keypair}}
+	switch v { {{range .Keypair}}
 	case {{ .Key }}:
 		return "{{ .StringValue }}"{{end}}
 	}
@@ -22,7 +22,7 @@ func (v {{ .ClassName }}) String() string {
 }
 
 func (v {{ .ClassName }}) Label() string {
-	switch v  { {{range .Keypair}}
+	switch v { {{range .Keypair}}
 	case {{ .Key }}:
 		return "{{ .Label }}"{{end}}
 	}
@@ -30,7 +30,7 @@ func (v {{ .ClassName }}) Label() string {
 }
 
 func (v {{ .ClassName }}) Values() []enum.Enum {
-	return []enum.Enum{ {{ .Keys }} }
+	return []enum.Enum{{{ .Keys }}}
 }
 
 func (v {{ .ClassName }}) Type() string {
