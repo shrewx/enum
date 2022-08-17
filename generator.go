@@ -39,7 +39,7 @@ func (g *EnumerationGenerator) Scan(names ...string) {
 			TypeName: typeName,
 			Enum:     g.scanner.Enum(typeName),
 		}
-		if strings.Contains(typeName.Type().Underlying().String(), "string") {
+		if typeName != nil && strings.Contains(typeName.Type().Underlying().String(), "string") {
 			g.enums[name].StringType = true
 		}
 	}
@@ -62,6 +62,9 @@ func getPkgDirAndPackage(importPath string) (string, string) {
 
 func (g *EnumerationGenerator) Output(pwd string) {
 	for name, enum := range g.enums {
+		if enum.TypeName == nil {
+			continue
+		}
 		pkgDir, packageName := getPkgDirAndPackage(enum.TypeName.Pkg().Path())
 		dir, _ := filepath.Rel(pwd, pkgDir)
 		filename := stringx.Camel2Case(name) + "__generated.go"
