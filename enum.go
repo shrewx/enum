@@ -18,9 +18,22 @@ type EnumOffset interface {
 
 type EnumValue struct {
 	Key         string
-	StringValue string
-	IntValue    int
+	StringValue *string
+	IntValue    *int64
+	FloatValue  *float64
 	Label       string
+}
 
-	StringType bool
+func (e EnumValue) Type() interface{} {
+	if e.StringValue != nil {
+		return e.StringValue
+	}
+	if e.IntValue != nil {
+		return e.IntValue
+	}
+	if e.FloatValue != nil {
+		return e.FloatValue
+	}
+
+	return nil
 }

@@ -30,12 +30,15 @@ func (e *EnumScanner) Enum(typeName *types.TypeName) []EnumValue {
 	if values, ok := e.enums[typeName]; ok {
 		return sortEnumValues(values)
 	}
-
+	ev := EnumValue{}
 	typeUnderlying := typeName.Type().Underlying().String()
-	isInt := false
 	if strings.Contains(typeUnderlying, "int") {
-		isInt = true
-	} else if !strings.Contains(typeUnderlying, "string") {
+		ev.IntValue = new(int64)
+	} else if strings.Contains(typeUnderlying, "float") {
+		ev.FloatValue = new(float64)
+	} else if strings.Contains(typeUnderlying, "string") {
+		ev.StringValue = new(string)
+	} else {
 		panic(fmt.Errorf("enum type underlying must be an int or string, but got %s", typeName.Type().Underlying().String()))
 	}
 
@@ -52,18 +55,23 @@ func (e *EnumScanner) Enum(typeName *types.TypeName) []EnumValue {
 			continue
 		}
 
-		key := typeConst.Name()
-		sp := strings.SplitN(key, "__", 2)
-		stringValue := key
-		if len(sp) == 2 {
-			stringValue = sp[1]
-		}
+		ev.Key = typeConst.Name()
 
-		var intValue int64
-		if isInt {
-			intValue, _ = strconv.ParseInt(typeConst.Val().String(), 10, 32)
-		} else {
-			stringValue = strings.Trim(typeConst.Val().String(), "\"")
+		if ev.IntValue != nil {
+			intValue, _ := strconv.ParseInt(typeConst.Val().String(), 10, 64)
+			ev.IntValue = &intValue
+			sp := strings.SplitN(ev.Key, "__", 2)
+			stringValue := ev.Key
+			if len(sp) == 2 {
+				stringValue = sp[1]
+				ev.StringValue = &stringValue
+			}
+		} else if ev.FloatValue != nil {
+			floatValue, _ := strconv.ParseFloat(typeConst.Val().String(), 64)
+			ev.FloatValue = &floatValue
+		} else if ev.StringValue != nil {
+			stringValue := strings.Trim(typeConst.Val().String(), "\"")
+			ev.StringValue = &stringValue
 		}
 
 		var label string
@@ -75,13 +83,8 @@ func (e *EnumScanner) Enum(typeName *types.TypeName) []EnumValue {
 				label = v.Comment.Text()
 			}
 		}
-
-		e.enums[typeName] = append(e.enums[typeName], EnumValue{
-			Key:         key,
-			StringValue: stringValue,
-			IntValue:    int(intValue),
-			Label:       strings.TrimRight(strings.Replace(label, "\n", " ", -1), " "),
-		})
+		ev.Label = strings.TrimRight(strings.Replace(label, "\n", " ", -1), " ")
+		e.enums[typeName] = append(e.enums[typeName], ev)
 	}
 
 	return sortEnumValues(e.enums[typeName])
@@ -90,9 +93,9 @@ func (e *EnumScanner) Enum(typeName *types.TypeName) []EnumValue {
 func sortEnumValues(enumValues []EnumValue) []EnumValue {
 	sort.Slice(enumValues, func(i, j int) bool {
 		if enumValues[i].IntValue == enumValues[j].IntValue {
-			return enumValues[i].StringValue < enumValues[j].StringValue
+			return *enumValues[i].StringValue < *enumValues[j].StringValue
 		}
-		return enumValues[i].IntValue < enumValues[j].IntValue
+		return *enumValues[i].IntValue < *enumValues[j].IntValue
 	})
 
 	return enumValues
