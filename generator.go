@@ -79,7 +79,7 @@ func (g *EnumerationGenerator) Output(pwd string) {
 			basicType = "string"
 		}
 
-		buff, err := stringx.ParseTextTemplate("enum", EnumTemplate, map[string]interface{}{
+		buff, err := stringx.ParseTextTemplate("enum", TplEnum, map[string]interface{}{
 			"Package":   packageName,
 			"ClassName": name,
 			"Keypair":   enum.Enum,
